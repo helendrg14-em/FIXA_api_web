@@ -5,16 +5,11 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Fixa.Notificaciones.Servicios;
 
-/// <summary>Error de regla de negocio o de referencia inválida: el controlador responde 400.</summary>
 public sealed class ErrorDeDatos(string campo, string mensaje) : Exception(mensaje)
 {
     public string Campo { get; } = campo;
 }
 
-/// <summary>
-/// Crea los avisos y los entrega. Elige la subclase según el canal de la plantilla y delega el
-/// envío en el canal que corresponde, así agregar un canal nuevo no cambia esta clase.
-/// </summary>
 public sealed class ServicioAvisos(NotificacionesDbContext db, IEnumerable<ICanalEnvio> canales)
 {
     public async Task<Aviso> CrearYEnviarAsync(AvisoEntrada entrada, CancellationToken cancelacion)
@@ -56,10 +51,6 @@ public sealed class ServicioAvisos(NotificacionesDbContext db, IEnumerable<ICana
         return aviso;
     }
 
-    /// <summary>
-    /// Vuelve a intentar un aviso que falló, con el contacto actual del destinatario: si el
-    /// vecino corrigió su correo o su dispositivo, el reintento usa el dato nuevo.
-    /// </summary>
     public async Task<Aviso?> ReintentarAsync(int id, CancellationToken cancelacion)
     {
         var aviso = await db.Avisos.Include(a => a.Destinatario).FirstOrDefaultAsync(a => a.Id == id, cancelacion);

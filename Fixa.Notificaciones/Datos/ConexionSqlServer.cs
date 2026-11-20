@@ -2,11 +2,6 @@ using Microsoft.Data.SqlClient;
 
 namespace Fixa.Notificaciones.Datos;
 
-/// <summary>
-/// Encuentra el SQL Server local de la máquina donde se ejecuta el proyecto. Si la cadena apunta
-/// a "localhost" y ahí no hay servidor, prueba las instalaciones más comunes (SQL Express y
-/// LocalDB), así el proyecto funciona en otra PC sin tocar appsettings.json.
-/// </summary>
 public static class ConexionSqlServer
 {
     private static readonly string[] ServidoresLocales = ["localhost", ".", "(local)"];

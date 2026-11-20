@@ -2,7 +2,6 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Fixa.Notificaciones.Dtos;
 
-/// <summary>Lo que envía FIXA para avisar al vecino de un cambio en su caso.</summary>
 public sealed class AvisoEntrada
 {
     /// <example>caso_recibido</example>
@@ -21,7 +20,6 @@ public sealed class AvisoEntrada
     public string EstadoCaso { get; init; } = null!;
 }
 
-/// <summary>Resumen de un aviso, para listas.</summary>
 public sealed record AvisoResumen(
     int Id,
     string Canal,
@@ -31,10 +29,10 @@ public sealed record AvisoResumen(
     DateTime FechaCreacion,
     DateTime? FechaEnvio);
 
-/// <summary>Un intento de entrega dentro del detalle de un aviso.</summary>
+
 public sealed record IntentoSalida(int Id, DateTime Fecha, bool Exitoso, string Detalle);
 
-/// <summary>Detalle completo de un aviso, con el destino según su canal y sus intentos.</summary>
+
 public sealed record AvisoDetalle(
     int Id,
     string Canal,
