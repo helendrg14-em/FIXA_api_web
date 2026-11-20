@@ -1,0 +1,155 @@
+@host = http://localhost:5180
+@api = {{host}}/api/v1
+@plantillaConAvisos = 1
+@destinatarioConAvisos = 1
+@idInexistente = 999
+
+### 01. GET plantillas — 200 con la lista de plantillas
+GET {{api}}/plantillas
+
+### 02. GET plantilla inexistente — 404 con un problema en español
+GET {{api}}/plantillas/{{idInexistente}}
+
+### 03. POST plantilla válida — 201 con el DTO y la cabecera Location
+# @name crearPlantilla
+POST {{api}}/plantillas
+Content-Type: application/json
+
+{
+  "codigo": "prueba_seguimiento",
+  "nombre": "Seguimiento del reporte",
+  "canal": "Push",
+  "cuerpo": "Tu reporte {codigo} cambió a {estado}."
+}
+
+### 04. GET plantilla creada — 200 y cantidadAvisos = 0
+GET {{api}}/plantillas/{{crearPlantilla.response.body.$.id}}
+
+### 05. POST plantilla de correo sin asunto — 400 con el error en Asunto
+POST {{api}}/plantillas
+Content-Type: application/json
+
+{
+  "codigo": "prueba_correo",
+  "nombre": "Aviso por correo",
+  "canal": "Correo",
+  "cuerpo": "Tu reporte {codigo} cambió a {estado}."
+}
+
+### 06. POST plantilla con código repetido — 409
+POST {{api}}/plantillas
+Content-Type: application/json
+
+{
+  "codigo": "caso_recibido",
+  "nombre": "Reporte recibido",
+  "canal": "Push",
+  "cuerpo": "Recibimos el reporte {codigo}."
+}
+
+### 07. PUT plantilla creada — 204
+PUT {{api}}/plantillas/{{crearPlantilla.response.body.$.id}}
+Content-Type: application/json
+
+{
+  "codigo": "prueba_seguimiento",
+  "nombre": "Seguimiento por correo",
+  "canal": "Correo",
+  "asunto": "Estado de tu reporte",
+  "cuerpo": "Tu reporte {codigo} cambió a {estado}.",
+  "activa": true
+}
+
+### 08. DELETE plantilla sin avisos — 204
+DELETE {{api}}/plantillas/{{crearPlantilla.response.body.$.id}}
+
+### 09. POST aviso con token válido — 201, Location y estado Enviado
+# @name avisoEnviado
+POST {{api}}/avisos
+Content-Type: application/json
+
+{
+  "codigoPlantilla": "caso_recibido",
+  "codigoReporte": "FX-2026-000001",
+  "estadoCaso": "Recibida"
+}
+
+### 10. DELETE plantilla usada en el paso 09 — 400, se conserva el historial
+DELETE {{api}}/plantillas/{{plantillaConAvisos}}
+
+### 11. GET avisos de la plantilla usada en el paso 09 — 200 con el aviso
+GET {{api}}/plantillas/{{plantillaConAvisos}}/avisos
+
+### 12. GET destinatarios — 200 con la lista
+GET {{api}}/destinatarios
+
+### 13. GET destinatario de prueba — 200 con el DTO
+GET {{api}}/destinatarios/{{destinatarioConAvisos}}
+
+### 14. POST destinatario válido — 201 con el DTO y la cabecera Location
+# En una base que ya tiene este destinatario, usa otro código de reporte de prueba.
+# @name crearDestinatario
+POST {{api}}/destinatarios
+Content-Type: application/json
+
+{
+  "codigoReporte": "FX-2026-901001",
+  "correo": "vecino.prueba@fixa.test"
+}
+
+### 15. POST destinatario sin correo ni token — 400
+POST {{api}}/destinatarios
+Content-Type: application/json
+
+{
+  "codigoReporte": "FX-2026-901002"
+}
+
+### 16. POST destinatario con código repetido — 409
+POST {{api}}/destinatarios
+Content-Type: application/json
+
+{
+  "codigoReporte": "FX-2026-000001",
+  "tokenDispositivo": "token-de-prueba"
+}
+
+### 17. PUT destinatario creado — 204
+PUT {{api}}/destinatarios/{{crearDestinatario.response.body.$.id}}
+Content-Type: application/json
+
+{
+  "codigoReporte": "{{crearDestinatario.response.body.$.codigoReporte}}",
+  "correo": "vecino.actualizado@fixa.test",
+  "tokenDispositivo": "token-de-prueba-actualizado"
+}
+
+### 18. GET avisos del destinatario del paso 09 — 200 con el aviso
+GET {{api}}/destinatarios/{{destinatarioConAvisos}}/avisos
+
+### 19. GET avisos de un destinatario inexistente — 404
+GET {{api}}/destinatarios/{{idInexistente}}/avisos
+
+### 20. POST aviso con token vencido — 201 con estado Fallido
+# @name avisoFallido
+POST {{api}}/avisos
+Content-Type: application/json
+
+{
+  "codigoPlantilla": "caso_recibido",
+  "codigoReporte": "FX-2026-000003",
+  "estadoCaso": "Recibida"
+}
+
+### 21. POST reintento del aviso fallido — 200 con un intento adicional
+POST {{api}}/avisos/{{avisoFallido.response.body.$.id}}/reintentos
+
+### 22. GET aviso enviado — 200 con el detalle y los intentos
+GET {{api}}/avisos/{{avisoEnviado.response.body.$.id}}
+
+### 23. GET aviso inexistente — 404
+GET {{api}}/avisos/{{idInexistente}}
+
+### 24. GET avisos tras reiniciar la API — 200 y conserva el aviso del paso 09
+# Detén la API y vuelve a iniciarla antes de enviar esta petición.
+GET {{api}}/avisos?codigoReporte=FX-2026-000001&estado=Enviado
