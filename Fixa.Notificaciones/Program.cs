@@ -54,7 +54,13 @@ builder.Services.AddControllers(mvc =>
 
 builder.Services.AddProblemDetails();
 
-// SWAGGER: lo agrega Kevin (AddEndpointsApiExplorer y AddSwaggerGen).
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(opciones => opciones.SwaggerDoc("v1", new()
+{
+    Title = "FIXA · API de Notificaciones",
+    Version = "v1",
+    Description = "Plantillas, destinatarios y avisos push y por correo.",
+}));
 
 var app = builder.Build();
 
@@ -80,7 +86,8 @@ app.UseStatusCodePages();
 
 if (app.Environment.IsDevelopment())
 {
-    // SWAGGER: lo agrega Kevin (UseSwagger y UseSwaggerUI).
+    app.UseSwagger();
+    app.UseSwaggerUI();
 }
 
 app.MapControllers();
