@@ -11,8 +11,7 @@ public class AvisoConfiguracion : IEntityTypeConfiguration<Aviso>
         aviso.ToTable("Avisos");
         aviso.HasKey(a => a.Id);
 
-        // Generalización en una sola tabla: la columna "Canal" indica qué subclase es cada fila.
-        // La propiedad Aviso.Canal se calcula en C#; el discriminador es una propiedad aparte.
+
         aviso.Ignore(a => a.Canal);
         aviso.HasDiscriminator<string>("Discriminador")
             .HasValue<AvisoPush>(nameof(CanalAviso.Push))

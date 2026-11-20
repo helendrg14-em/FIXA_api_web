@@ -7,13 +7,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Fixa.Notificaciones.Controladores;
 
-/// <summary>Avisos al vecino. FIXA crea uno cada vez que cambia el estado de un caso.</summary>
+
 [ApiController]
 [Route("api/v1/avisos")]
 [Produces("application/json")]
 public sealed class AvisosController(NotificacionesDbContext db, ServicioAvisos servicio) : ControllerBase
 {
-    /// <summary>Lista los avisos, con filtros opcionales por código de reporte y estado.</summary>
+
     [HttpGet]
     [EndpointSummary("Listar avisos")]
     [ProducesResponseType<List<AvisoResumen>>(StatusCodes.Status200OK)]
@@ -30,7 +30,7 @@ public sealed class AvisosController(NotificacionesDbContext db, ServicioAvisos 
         return await consulta.OrderByDescending(a => a.Id).Select(ProyeccionesAviso.Resumen).ToListAsync(cancelacion);
     }
 
-    /// <summary>Detalle de un aviso con todos sus intentos de entrega.</summary>
+
     [HttpGet("{id:int}")]
     [EndpointSummary("Consultar un aviso por ID")]
     [ProducesResponseType<AvisoDetalle>(StatusCodes.Status200OK)]
@@ -44,10 +44,7 @@ public sealed class AvisosController(NotificacionesDbContext db, ServicioAvisos 
         return aviso is null ? NoEncontrado() : ProyeccionesAviso.Detalle(aviso);
     }
 
-    /// <summary>
-    /// Crea un aviso con la plantilla indicada y lo entrega por su canal. Si la entrega falla,
-    /// el aviso queda guardado como "Fallido" y se puede reintentar.
-    /// </summary>
+
     [HttpPost]
     [EndpointSummary("Crear y enviar un aviso")]
     [ProducesResponseType<AvisoDetalle>(StatusCodes.Status201Created)]
@@ -65,7 +62,6 @@ public sealed class AvisosController(NotificacionesDbContext db, ServicioAvisos 
         }
     }
 
-    /// <summary>Vuelve a intentar la entrega de un aviso fallido.</summary>
     [HttpPost("{id:int}/reintentos")]
     [EndpointSummary("Reintentar un aviso fallido")]
     [ProducesResponseType<AvisoDetalle>(StatusCodes.Status200OK)]

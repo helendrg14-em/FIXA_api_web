@@ -3,13 +3,8 @@ using Fixa.Notificaciones.Modelos;
 
 namespace Fixa.Notificaciones.Dtos;
 
-/// <summary>
-/// Conversión de entidades a DTO de avisos. La usan Avisos, Plantillas y Destinatarios, así
-/// todos devuelven los avisos con la misma forma.
-/// </summary>
 public static class ProyeccionesAviso
 {
-    /// <summary>Se traduce a SQL: solo se leen las columnas del resumen.</summary>
     public static readonly Expression<Func<Aviso, AvisoResumen>> Resumen = a => new AvisoResumen(
         a.Id,
         a is AvisoPush ? nameof(CanalAviso.Push) : nameof(CanalAviso.Correo),

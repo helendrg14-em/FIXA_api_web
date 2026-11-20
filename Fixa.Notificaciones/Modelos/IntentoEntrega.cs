@@ -1,6 +1,5 @@
 namespace Fixa.Notificaciones.Modelos;
 
-/// <summary>Cada vez que se intenta entregar un aviso queda un registro, salga bien o mal.</summary>
 public class IntentoEntrega
 {
     public int Id { get; set; }
