@@ -6,9 +6,12 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// La cadena va en User Secrets (desarrollo) o en variables de entorno; nunca en el repositorio.
-var conexion = builder.Configuration.GetConnectionString("Notificaciones")
-    ?? throw new InvalidOperationException("Configura ConnectionStrings:Notificaciones (ver README).");
+// La cadena está en appsettings.json y usa autenticación de Windows, sin contraseñas.
+// Si el SQL Server local no está en "localhost", se busca en SQL Express y LocalDB.
+var conexion = ConexionSqlServer.Resolver(
+    builder.Configuration.GetConnectionString("Notificaciones")
+        ?? throw new InvalidOperationException("Falta ConnectionStrings:Notificaciones en appsettings.json."),
+    out var servidorSql);
 
 builder.Services.AddDbContext<NotificacionesDbContext>(opciones => opciones.UseSqlServer(conexion));
 
@@ -54,6 +57,23 @@ builder.Services.AddProblemDetails();
 // SWAGGER: lo agrega Kevin (AddEndpointsApiExplorer y AddSwaggerGen).
 
 var app = builder.Build();
+
+// Crea la base, sus tablas y los datos de prueba al iniciar (si ya existen, no hace nada).
+using (var alcance = app.Services.CreateScope())
+{
+    try
+    {
+        alcance.ServiceProvider.GetRequiredService<NotificacionesDbContext>().Database.Migrate();
+        app.Logger.LogInformation("Base de datos lista en el servidor {Servidor}.", servidorSql);
+    }
+    catch (Microsoft.Data.SqlClient.SqlException)
+    {
+        app.Logger.LogCritical(
+            "No se pudo conectar a SQL Server ({Servidor}). Revisa que el servicio esté iniciado " +
+            "o cambia ConnectionStrings:Notificaciones en appsettings.json.", servidorSql);
+        throw;
+    }
+}
 
 app.UseExceptionHandler();
 app.UseStatusCodePages();
