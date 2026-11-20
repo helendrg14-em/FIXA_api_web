@@ -126,6 +126,19 @@ public sealed class PlantillasController(NotificacionesDbContext db) : Controlle
         return NoContent();
     }
 
+    [HttpGet("{id:int}/avisos")]
+    [EndpointSummary("Listar los avisos de una plantilla")]
+    [ProducesResponseType<List<AvisoResumen>>(StatusCodes.Status200OK)]
+    [ProducesResponseType<ProblemDetails>(StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<List<AvisoResumen>>> ListarAvisos(int id, CancellationToken cancelacion)
+    {
+        if (!await db.Plantillas.AnyAsync(plantilla => plantilla.Id == id, cancelacion))
+            return NoEncontrada();
+
+        return await db.Avisos.AsNoTracking().Where(aviso => aviso.PlantillaId == id)
+            .OrderByDescending(aviso => aviso.Id).Select(ProyeccionesAviso.Resumen).ToListAsync(cancelacion);
+    }
+
     private static void AplicarDatos(Plantilla plantilla, PlantillaEntrada entrada)
     {
         plantilla.Codigo = entrada.Codigo;
